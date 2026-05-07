@@ -52,7 +52,11 @@ import br.com.claus.sellvia.features.catalog.domain.model.CatalogDisplayOptions
 import br.com.claus.sellvia.features.catalog.domain.model.CatalogFilterOptions
 import br.com.claus.sellvia.features.catalog.presentation.CatalogUiState
 import br.com.claus.sellvia.features.catalog.presentation.DownloadStatus
+import br.com.claus.sellvia.features.category.domain.model.Category
+import br.com.claus.sellvia.features.category.presentation.ListCategoryViewModel
 import br.com.claus.sellvia.features.product.domain.model.ProductType
+import br.com.claus.sellvia.features.product.presentation.component.CategoryPickerBottomSheet
+import br.com.claus.sellvia.features.product.presentation.component.CategorySelectorField
 
 private val sortOptions = listOf(
     "name" to "Nome",
@@ -68,6 +72,8 @@ fun CatalogBottomSheet(
     onDismiss: () -> Unit,
     onDisplayOptionsUpdate: (CatalogDisplayOptions.() -> CatalogDisplayOptions) -> Unit,
     onFilterOptionsUpdate: (CatalogFilterOptions.() -> CatalogFilterOptions) -> Unit,
+    onCategorySelected: (Category?) -> Unit,
+    categoryViewModel: ListCategoryViewModel,
     onDownload: () -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -125,7 +131,10 @@ fun CatalogBottomSheet(
                 if (selectedTab == 0) {
                     FiltersTab(
                         filter = uiState.filterOptions,
+                        selectedCategory = uiState.selectedCategory,
                         onUpdate = onFilterOptionsUpdate,
+                        onCategorySelected = onCategorySelected,
+                        categoryViewModel = categoryViewModel,
                     )
                 } else {
                     DisplayTab(
@@ -167,18 +176,31 @@ fun CatalogBottomSheet(
 @Composable
 private fun FiltersTab(
     filter: CatalogFilterOptions,
+    selectedCategory: Category?,
     onUpdate: (CatalogFilterOptions.() -> CatalogFilterOptions) -> Unit,
+    onCategorySelected: (Category?) -> Unit,
+    categoryViewModel: ListCategoryViewModel,
 ) {
     var nameText by remember(filter.name) { mutableStateOf(filter.name.orEmpty()) }
     var skuText by remember(filter.sku) { mutableStateOf(filter.sku.orEmpty()) }
-    var categoryText by remember(filter.categoryId) {
-        mutableStateOf(filter.categoryId?.toString().orEmpty())
-    }
     var minPriceText by remember(filter.minPrice) {
         mutableStateOf(filter.minPrice?.toString().orEmpty())
     }
     var maxPriceText by remember(filter.maxPrice) {
         mutableStateOf(filter.maxPrice?.toString().orEmpty())
+    }
+    var showCategoryPicker by remember { mutableStateOf(false) }
+
+    if (showCategoryPicker) {
+        CategoryPickerBottomSheet(
+            selectedCategory = selectedCategory,
+            onCategorySelected = { category: Category? ->
+                onCategorySelected(category)
+                showCategoryPicker = false
+            },
+            onDismiss = { showCategoryPicker = false },
+            categoryViewModel = categoryViewModel,
+        )
     }
 
     SectionLabel("Busca de produtos")
@@ -205,14 +227,9 @@ private fun FiltersTab(
     SectionDivider()
 
     SectionLabel("Categoria")
-    FilterTextField(
-        value = categoryText,
-        onValueChange = {
-            categoryText = it
-            onUpdate { copy(categoryId = it.trim().toLongOrNull()) }
-        },
-        label = "ID da categoria",
-        keyboardType = KeyboardType.Number,
+    CategorySelectorField(
+        selectedCategory = selectedCategory,
+        onClick = { showCategoryPicker = true },
     )
 
     SectionDivider()

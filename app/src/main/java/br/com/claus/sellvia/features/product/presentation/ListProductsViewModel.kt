@@ -14,6 +14,7 @@ import br.com.claus.sellvia.core.network.ResultWrapper
 import br.com.claus.sellvia.core.utils.formatDouble
 import br.com.claus.sellvia.features.product.data.model.ProductRequest
 import br.com.claus.sellvia.features.product.data.model.ProductSearchQuery
+import br.com.claus.sellvia.features.category.domain.model.Category
 import br.com.claus.sellvia.features.product.domain.model.Product
 import br.com.claus.sellvia.features.product.domain.usecase.DeleteProductUseCase
 import br.com.claus.sellvia.features.product.domain.usecase.GetProductsUseCase
@@ -42,6 +43,7 @@ data class ListProductUiState(
     val editImageUri: Uri? = null,
     val showImageUpdateConfirm: Boolean = false,
     val isUploadingImage: Boolean = false,
+    val editSelectedCategory: Category? = null,
 )
 
 class ListProductsViewModel(
@@ -113,6 +115,7 @@ class ListProductsViewModel(
                 isEditMode = false,
                 editFormData = product.toEditRequest(),
                 editFieldErrors = RegistryProductFieldErrors(),
+                editSelectedCategory = product.category,
             )
         }
     }
@@ -128,6 +131,7 @@ class ListProductsViewModel(
                 showEditSaveConfirm = false,
                 editImageUri = null,
                 showImageUpdateConfirm = false,
+                editSelectedCategory = null,
             )
         }
     }
@@ -158,6 +162,7 @@ class ListProductsViewModel(
                             isEditMode = false,
                             editFormData = null,
                             showDeleteConfirm = false,
+                            editSelectedCategory = null,
                             actionResult = SubmitResult.Success,
                         )
                     }
@@ -197,6 +202,7 @@ class ListProductsViewModel(
                             isEditMode = false,
                             editFormData = null,
                             showEditSaveConfirm = false,
+                            editSelectedCategory = null,
                             actionResult = SubmitResult.Success,
                         )
                     }
@@ -289,6 +295,15 @@ class ListProductsViewModel(
     fun onEditWhatsappMessageChange(value: String) {
         _uiState.update {
             it.copy(editFormData = it.editFormData?.copy(whatsappMessage = value.ifBlank { null }))
+        }
+    }
+
+    fun onEditCategorySelected(category: Category?) {
+        _uiState.update {
+            it.copy(
+                editSelectedCategory = category,
+                editFormData = it.editFormData?.copy(categoryId = category?.id),
+            )
         }
     }
 
