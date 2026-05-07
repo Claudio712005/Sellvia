@@ -66,6 +66,13 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import br.com.claus.sellvia.core.utils.formatDouble
 import br.com.claus.sellvia.features.product.domain.model.Product
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import br.com.claus.sellvia.features.category.domain.model.Category
+import br.com.claus.sellvia.features.category.presentation.ListCategoryViewModel
+import br.com.claus.sellvia.features.product.presentation.component.CategoryPickerBottomSheet
+import br.com.claus.sellvia.features.product.presentation.component.CategorySelectorField
 import br.com.claus.sellvia.features.product.presentation.component.ProductTextField
 import br.com.claus.sellvia.features.product.presentation.components.ProductItem
 import br.com.claus.sellvia.ui.components.paginationTemplate.Paginator
@@ -78,6 +85,7 @@ fun ListProductScreen(
     modifier: Modifier = Modifier,
     bottomBarPadding: Dp = 0.dp,
     viewModel: ListProductsViewModel = koinViewModel(),
+    categoryViewModel: ListCategoryViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val selectedSort by viewModel.selectedSort.collectAsState()
@@ -137,6 +145,7 @@ fun ListProductScreen(
                 EditProductForm(
                     uiState = uiState,
                     viewModel = viewModel,
+                    categoryViewModel = categoryViewModel,
                 )
             }
         }
@@ -261,9 +270,23 @@ private fun ProductActionSheet(
 private fun EditProductForm(
     uiState: ListProductUiState,
     viewModel: ListProductsViewModel,
+    categoryViewModel: ListCategoryViewModel,
 ) {
     val formData = uiState.editFormData ?: return
     val errors = uiState.editFieldErrors
+    var showCategoryPicker by remember { mutableStateOf(false) }
+
+    if (showCategoryPicker) {
+        CategoryPickerBottomSheet(
+            selectedCategory = uiState.editSelectedCategory,
+            onCategorySelected = { category: Category? ->
+                viewModel.onEditCategorySelected(category)
+                showCategoryPicker = false
+            },
+            onDismiss = { showCategoryPicker = false },
+            categoryViewModel = categoryViewModel,
+        )
+    }
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
@@ -376,6 +399,17 @@ private fun EditProductForm(
             singleLine = true,
             supportingText = "Código único de identificação",
             error = errors.sku,
+        )
+
+        Text(
+            text = "Categoria",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.primary,
+        )
+
+        CategorySelectorField(
+            selectedCategory = uiState.editSelectedCategory,
+            onClick = { showCategoryPicker = true },
         )
 
         ProductTextField(

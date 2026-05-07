@@ -161,7 +161,7 @@ fun StepOneContent(
 }
 
 @Composable
-private fun CategorySelectorField(
+internal fun CategorySelectorField(
     selectedCategory: Category?,
     onClick: () -> Unit,
 ) {

@@ -42,6 +42,7 @@ import br.com.claus.sellvia.features.catalog.presentation.CatalogViewModel
 import br.com.claus.sellvia.features.catalog.presentation.DownloadStatus
 import br.com.claus.sellvia.features.catalog.presentation.components.CatalogBottomSheet
 import br.com.claus.sellvia.features.catalog.presentation.components.CatalogDownloadingOverlay
+import br.com.claus.sellvia.features.category.presentation.ListCategoryViewModel
 import br.com.claus.sellvia.features.home.presentation.components.HomeBlock
 import br.com.claus.sellvia.features.home.presentation.components.HomeBlockData
 import br.com.claus.sellvia.ui.theme.SellviaNotSelected
@@ -56,6 +57,7 @@ fun HomeScreen(
     onNavigateToCompany: (() -> Unit)? = null,
     catalogViewModel: CatalogViewModel = koinViewModel(),
     homeViewModel: HomeViewModel = koinViewModel(),
+    categoryViewModel: ListCategoryViewModel = koinViewModel(),
 ) {
     val uiState by catalogViewModel.uiState.collectAsState()
     val homeState by homeViewModel.uiState.collectAsState()
@@ -128,6 +130,8 @@ fun HomeScreen(
             onDismiss = { catalogViewModel.onDismissSheet() },
             onDisplayOptionsUpdate = { catalogViewModel.onDisplayOptionsUpdate(it) },
             onFilterOptionsUpdate = { catalogViewModel.onFilterOptionsUpdate(it) },
+            onCategorySelected = { catalogViewModel.onCategorySelected(it) },
+            categoryViewModel = categoryViewModel,
             onDownload = { catalogViewModel.onDownload() },
         )
     }
