@@ -7,6 +7,7 @@ import br.com.claus.sellvia.core.network.ResultWrapper
 import br.com.claus.sellvia.features.catalog.domain.model.CatalogDisplayOptions
 import br.com.claus.sellvia.features.catalog.domain.model.CatalogFilterOptions
 import br.com.claus.sellvia.features.catalog.domain.usecase.DownloadCatalogUseCase
+import br.com.claus.sellvia.features.category.domain.model.Category
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,6 +21,7 @@ data class CatalogUiState(
     val displayOptions: CatalogDisplayOptions = CatalogDisplayOptions(),
     val filterOptions: CatalogFilterOptions = CatalogFilterOptions(),
     val downloadStatus: DownloadStatus = DownloadStatus.Idle,
+    val selectedCategory: Category? = null,
 )
 
 class CatalogViewModel(
@@ -44,6 +46,15 @@ class CatalogViewModel(
 
     fun onFilterOptionsUpdate(update: CatalogFilterOptions.() -> CatalogFilterOptions) {
         _uiState.update { it.copy(filterOptions = it.filterOptions.update()) }
+    }
+
+    fun onCategorySelected(category: Category?) {
+        _uiState.update {
+            it.copy(
+                selectedCategory = category,
+                filterOptions = it.filterOptions.copy(categoryId = category?.id),
+            )
+        }
     }
 
     fun onDownload() {
